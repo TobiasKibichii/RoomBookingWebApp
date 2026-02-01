@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Room, RoomImage
+from .models import Room, RoomImage, OccupiedDate
 
 class RoomImageSerializer(serializers.ModelSerializer):
     room = serializers.HyperlinkedRelatedField(
@@ -19,4 +19,11 @@ class RoomSerializer(serializers.HyperlinkedModelSerializer):
         model = Room
         fields = ['url','id','name','type','maxOccupancy','currency','pricePerNight','description', 'images'] 
     
-
+class OccupiedDateSerializer(serializers.HyperlinkedModelSerializer):
+    room = serializers.HyperlinkedRelatedField(
+        view_name= 'room-detail',
+        queryset = Room.objects.all()
+    )
+    class Meta:
+        model = OccupiedDate
+        fields = ['url','id','room','date']
