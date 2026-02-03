@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
+from django.conf import settings
 
 # Create your models here.
 
@@ -34,5 +36,23 @@ class RoomImage(models.Model):
         return f"Image for {self.room.name} - {self.caption or 'No Caption'}"
     
 class OccupiedDate(models.Model):
-    room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='occupiedDates')
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='occupied_dates')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='booked_dates')
     date = models.DateField()    
+    
+    class Meta:
+        unique_together = ('room', 'date')
+    
+    def __str__(self):
+        return f"{self.date} - {self.room.name} booked by {self.user.username}"
+    
+    
+
+
+
+class User(AbstractUser):
+    email = models.EmailField(unique = True)
+    full_name = models.CharField(max_length =100, default='')
+    
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
