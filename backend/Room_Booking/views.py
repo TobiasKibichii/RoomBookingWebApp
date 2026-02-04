@@ -6,6 +6,9 @@ from rest_framework.reverse import reverse
 from .models import Room, OccupiedDate, User
 from .serializers import RoomSerializer, OccupiedDateSerializer, UserSerializer
 from rest_framework.permissions import IsAuthenticated
+from .permissions import IsAdminOrReadOnly
+from .permissions import IsOwnerOrReadOnly
+from rest_framework import permissions
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
@@ -22,15 +25,18 @@ def api_root(request, format=None):
 class RoomList(generics.ListCreateAPIView):
     queryset = Room.objects.all()
     serializer_class = RoomSerializer
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class RoomDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Room.objects.all()
     serializer_class = RoomSerializer
+    permission_classes = [IsAdminOrReadOnly]
     
 class OccupiedDatesList(generics.ListCreateAPIView):
     queryset = OccupiedDate.objects.all()
     serializer_class = OccupiedDateSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     
     def get_queryset(self):
         user = self.request.user
@@ -42,18 +48,21 @@ class OccupiedDatesList(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
         
-    permission_classes = [IsAuthenticated]
+    
     
     
     
 class OccupiedDatesDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = OccupiedDate.objects.all()
     serializer_class = OccupiedDateSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly ]
     
     
 class UserList(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
     
     def get_queryset(self):
         user = self.request.user
@@ -62,7 +71,7 @@ class UserList(generics.ListAPIView):
         else:
             return User.objects.filter(id = user.id)
         
-    permission_classes = [IsAuthenticated]
+    
         
 
 class UserDetail(generics.RetrieveAPIView):
